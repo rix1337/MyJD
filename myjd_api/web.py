@@ -25,6 +25,8 @@ import os
 import sys
 
 from docopt import docopt
+from flask import Flask, request, jsonify
+from gevent.pywsgi import WSGIServer
 
 from myjd_api.common import check_ip
 from myjd_api.common import decode_base64
@@ -42,8 +44,7 @@ from myjd_api.myjd import move_to_downloads
 from myjd_api.myjd import remove_from_linkgrabber
 from myjd_api.myjd import retry_decrypt
 from myjd_api.myjd import update_jdownloader
-from flask import Flask, request, jsonify
-from gevent.pywsgi import WSGIServer
+from myjd_api.version import get_version
 
 
 def app_container(port, configfile, _device):
@@ -251,14 +252,14 @@ def main():
                         print(
                             'Please provide "-e PARAMETER=[--jd-device=<DEVICENAME>]" for the first run of this docker image!')
                         print(u'Could not connect to My JDownloader! Exiting...')
-                        sys.exit(0)
+                        sys.exit(1)
                 Config('MyJD', configfile).save("port", "8080")
                 _device = get_device(configfile)
             else:
                 print(
                     u'Please provide "-e PARAMETER=[--jd-user=<USERNAME> --jd-pass=<PASSWORD>" for the first run of this docker image!')
                 print(u'Could not connect to My JDownloader! Exiting...')
-                sys.exit(0)
+                sys.exit(1)
         else:
             _device = myjd_input(configfile)
             settings = Config('MyJD', configfile)
@@ -297,14 +298,17 @@ def main():
                     _device = get_device(configfile)
                 else:
                     print(u'Could not connect to My JDownloader! Exiting...')
-                    sys.exit(0)
+                    sys.exit(1)
         else:
             print(u'Could not connect to My JDownloader! Exiting...')
-            sys.exit(0)
+            sys.exit(1)
     if _device:
         if not arguments['--docker']:
-            print(u'MyJD-API is available at http://' + check_ip() + ':' + str(
+            print(u'MyJD-API (' + get_version() + ') is available at http://' + check_ip() + ':' + str(
                 port) + u'/ connected with: ' + _device.name)
         else:
-            print(u'MyJD-API is available and connected with: ' + _device.name)
+            print(u'MyJD-API (' + get_version() + ') is available and connected with: ' + _device.name)
         app_container(port, configfile, _device)
+    else:
+        print(u'Could not connect to My JDownloader! Exiting...')
+        sys.exit(1)
