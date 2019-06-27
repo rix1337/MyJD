@@ -236,6 +236,7 @@ def main():
         configfile = '/config/MyJD.ini'
     else:
         configfile = config() + "/MyJD.ini"
+    port = 8080
     if not os.path.exists(configfile):
         if arguments['--docker']:
             if arguments['--jd-user'] and arguments['--jd-pass']:
@@ -280,8 +281,6 @@ def main():
             port = int(settings.get('port'))
             if not port:
                 port = 8080
-        else:
-            port = 8080
         if not user and not password and not arguments['--docker']:
             _device = myjd_input(configfile)
             settings = Config('MyJD', configfile)
